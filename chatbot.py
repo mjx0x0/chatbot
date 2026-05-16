@@ -80,11 +80,13 @@ Tone: Professional, highly objective, academic, risk-aware, and regulatory-drive
 # 5. Sidebar Layout with Quick Reference Actions
 with st.sidebar:
     st.markdown("### 🏛️ University Hub")
-    # Clean fallback text presentation if image has network loading delays
+    
+    # Using a flat PNG URL that st.image can read perfectly
     st.image(
-        "https://upload.wikimedia.org/wikipedia/commons/e/e0/Mindanao_State_University_System_Seal.svg", 
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Mindanao_State_University_System_Seal.svg/240px-Mindanao_State_University_System_Seal.svg.png", 
         width=120
     )
+    
     st.markdown("---")
     st.markdown("### 🛠️ Quick Inquiry Presets")
     st.caption("Select an automated template focus area to guide your input:")
