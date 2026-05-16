@@ -81,11 +81,14 @@ Tone: Professional, highly objective, academic, risk-aware, and regulatory-drive
 with st.sidebar:
     st.markdown("### 🏛️ University Hub")
     
-    # Using a flat PNG URL that st.image can read perfectly
-    st.image(
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Mindanao_State_University_System_Seal.svg/240px-Mindanao_State_University_System_Seal.svg.png", 
-        width=120
-    )
+    st.markdown(
+            """
+            <div style="text-align: center;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Mindanao_State_University_System_Seal.svg" width="120">
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
     
     st.markdown("---")
     st.markdown("### 🛠️ Quick Inquiry Presets")
