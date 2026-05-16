@@ -46,7 +46,7 @@ st.markdown("""
             margin-bottom: 10px;
         }
     </style>
-""", unsafe_style_allowed=True)
+""", unsafe_allow_html=True)
 
 # 2. Render Branded Header Banner
 st.markdown("""
@@ -54,7 +54,7 @@ st.markdown("""
         <h1 class="msu-title">🤖 Isko BidDo: AI Inquiry Support System</h1>
         <p class="msu-subtitle">Mindanao State University - General Santos City • Procurement Office Advisory Module</p>
     </div>
-""", unsafe_style_allowed=True)
+""", unsafe_allow_html=True)
 
 # 3. Initialize the Google GenAI Client
 client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
