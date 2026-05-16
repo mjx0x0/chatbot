@@ -81,14 +81,7 @@ Tone: Professional, highly objective, academic, risk-aware, and regulatory-drive
 with st.sidebar:
     st.markdown("### 🏛️ University Hub")
     
-    st.markdown(
-            """
-            <div style="text-align: center;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Mindanao_State_University_System_Seal.svg" width="120">
-            </div>
-            """, 
-            unsafe_allow_html=True
-        )
+    st.image("logo.png", width=120)
     
     st.markdown("---")
     st.markdown("### 🛠️ Quick Inquiry Presets")
