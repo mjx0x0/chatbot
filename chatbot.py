@@ -151,7 +151,7 @@ if prompt := st.chat_input(input_placeholder):
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
                 temperature=0.3,  # Dropped temperature to 0.3 for stricter compliance accuracy
-                max_output_tokens=1500
+                max_output_tokens=4000
             )
         )
         
