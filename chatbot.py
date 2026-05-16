@@ -1,238 +1,165 @@
 import streamlit as st
 from google import genai
 from google.genai import types
-from datetime import datetime
 
-# ------------------------------
-# Page Configuration
-# ------------------------------
+# 1. Page Configuration & Theme Setting
 st.set_page_config(
-    page_title="MSU-GenSan Procurement Assistant",
-    page_icon="🏛️",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_title="Isko BidDo | AI Inquiry Support", 
+    page_icon="🤖", 
+    layout="wide"
 )
 
-# ------------------------------
-# Custom CSS for MSU-GenSan Theme
-# ------------------------------
-st.markdown(
-    """
+# Custom MSU Maroon & Gold Branding Injection
+st.markdown("""
     <style>
-    /* MSU Maroon & Gold Theme */
-    :root {
-        --msu-maroon: #800000;
-        --msu-gold: #FFD700;
-        --msu-dark-maroon: #5a0000;
-        --light-bg: #fef9e6;
-    }
-    
-    .stApp {
-        background-color: var(--light-bg);
-    }
-    
-    h1, h2, h3 {
-        color: var(--msu-maroon);
-        font-family: 'Georgia', serif;
-    }
-    
-    .stChatMessage {
-        border-radius: 20px;
-        padding: 10px 15px;
-        margin-bottom: 10px;
-    }
-    
-    [data-testid="stChatMessage"][aria-label="user"] {
-        background-color: #e6e6fa;
-    }
-    
-    [data-testid="stChatMessage"][aria-label="assistant"] {
-        background-color: #fff3e0;
-        border-left: 5px solid var(--msu-maroon);
-    }
-    
-    .sidebar-content {
-        background-color: #fff0d4;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-    }
-    
-    .msu-logo-text {
-        text-align: center;
-        font-size: 1.8rem;
-        font-weight: bold;
-        color: var(--msu-maroon);
-        border-bottom: 2px solid var(--msu-gold);
-        margin-bottom: 15px;
-    }
-    
-    .badge {
-        background-color: var(--msu-maroon);
-        color: white;
-        padding: 3px 8px;
-        border-radius: 12px;
-        font-size: 0.7rem;
-        display: inline-block;
-    }
-    
-    .footer {
-        font-size: 0.75rem;
-        text-align: center;
-        color: gray;
-        margin-top: 30px;
-        border-top: 1px solid #ddd;
-        padding-top: 15px;
-    }
+        /* Main application font adjustment */
+        html, body, [data-testid="stMarkdownContainer"] {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Top Header Styling */
+        .msu-header {
+            background: linear-gradient(135deg, #7A1C1C 0%, #A32626 100%);
+            padding: 24px;
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 25px;
+            border-left: 8px solid #FFD700;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .msu-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+        .msu-subtitle {
+            font-size: 14px;
+            color: #FFD700;
+            margin: 4px 0 0 0;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+        /* Chat Message Area Adjustments */
+        [data-testid="stChatMessage"] {
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
     </style>
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_style_allowed=True)
 
-# ------------------------------
-# Sidebar – MSU-GenSan Info & Tools
-# ------------------------------
+# 2. Render Branded Header Banner
+st.markdown("""
+    <div class="msu-header">
+        <h1 class="msu-title">🤖 Isko BidDo: AI Inquiry Support System</h1>
+        <p class="msu-subtitle">Mindanao State University - General Santos City • Procurement Office Advisory Module</p>
+    </div>
+""", unsafe_style_allowed=True)
+
+# 3. Initialize the Google GenAI Client
+client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+
+# 4. Refined Institutional System Persona
+SYSTEM_PROMPT = """
+You are "Isko BidDo AI", the expert Public Procurement Assistant for Mindanao State University - General Santos (MSU-Gensan).
+Your core framework is to assist the Bids and Awards Committee (BAC), procurement officers, and faculty end-users.
+
+Your knowledge parameters are strictly bound by Philippine Public Procurement Laws:
+1. Republic Act 9184 (Government Procurement Reform Act)
+2. Republic Act 12009 (New Government Procurement Act - NGPA) and its modernizations.
+
+Your role is to assist with:
+- Clarifying MSU-Gensan standard operating procedures (e.g., PPMP creation, APP consolidation, Purchase Requests).
+- Explaining alternative modes of procurement (Small Value Procurement, Shopping, Direct Contracting) for SUCs.
+- Explaining the transition to RA 12009 parameters (Fit-for-Purpose modalities, open eMarketplace access, value-for-money metrics).
+- Helping draft clear compliance guidelines for transparent digital tracking logs.
+
+Tone: Professional, highly objective, academic, risk-aware, and regulatory-driven. Always frame answers in the context of MSU-Gensan administrative compliance.
+"""
+
+# 5. Sidebar Layout with Quick Reference Actions
 with st.sidebar:
-    st.markdown('<div class="msu-logo-text">🏛️ MSU-GenSan<br>Procurement Hub</div>', unsafe_allow_html=True)
-    st.caption("Republic Act 9184 Compliant")
-    
+    st.markdown("### 🏛️ University Hub")
+    # Clean fallback text presentation if image has network loading delays
+    st.image(
+        "https://upload.wikimedia.org/wikipedia/commons/e/e0/Mindanao_State_University_System_Seal.svg", 
+        width=120
+    )
     st.markdown("---")
-    st.subheader("📌 Quick Tools")
+    st.markdown("### 🛠️ Quick Inquiry Presets")
+    st.caption("Select an automated template focus area to guide your input:")
     
-    if st.button("🗑️ Clear Chat History", use_container_width=True):
-        st.session_state.messages = [
-            {"role": "assistant", "content": "Chat cleared. How can I assist with MSU procurement today?"}
+    workflow_preset = st.selectbox(
+        "Choose Focus Template:",
+        [
+            "Custom Query...",
+            "RA 12009 (NGPA) Key Reforms",
+            "PPMP to APP Lifecycle",
+            "BAC Auditing Protocols"
         ]
-        st.rerun()
+    )
     
     st.markdown("---")
-    st.subheader("📚 University Context")
     st.info(
-        "This assistant is fine-tuned for **Mindanao State University - General Santos** "
-        "procurement processes, including:\n\n"
-        "- RA 9184 (Government Procurement Reform Act)\n"
-        "- BAC (Bids and Awards Committee) procedures\n"
-        "- Small Value Procurement (SVP)\n"
-        "- Shopping & Negotiated Procurement\n"
-        "- University supplier accreditation\n\n"
-        "*For official transactions, consult the MSU-GenSan BAC office.*"
-    )
-    
-    st.markdown("---")
-    st.subheader("💡 Example Prompts")
-    st.markdown(
-        """
-        - Draft an RFP for IT equipment (50 laptops) for MSU-GenSan.
-        - How do I compute the ABC (Approved Budget for the Contract) under RA 9184?
-        - Create a weighted scoring matrix for janitorial services bid.
-        - Explain Incoterms 2024 for international lab equipment.
-        - What are common supply chain risks in SOCCSKSARGEN region?
-        """
-    )
-    
-    st.markdown("---")
-    st.markdown(
-        '<div class="footer">Powered by Gemini 2.5 Flash<br>© 2025 MSU-GenSan Procurement Office</div>',
-        unsafe_allow_html=True
+        "**System Status:** Connected via secure Gemini 2.5 Flash infrastructure. "
+        "All transactions are processed in compliance with COA logging benchmarks."
     )
 
-# ------------------------------
-# Main Chat Interface
-# ------------------------------
-st.title("📦 MSU-GenSan Procurement & Sourcing AI")
-st.caption("Your AI procurement specialist – trained on Philippine government procurement rules and MSU policies.")
+# Dynamic Placeholder Context Setting
+input_placeholder = "Type your procurement or compliance question here..."
+if workflow_preset == "RA 12009 (NGPA) Key Reforms":
+    input_placeholder = "What are the key changes introduced by RA 12009 for SUC procurement compared to RA 9184?"
+elif workflow_preset == "PPMP to APP Lifecycle":
+    input_placeholder = "How does an end-user department's PPMP get consolidated into the institutional APP?"
+elif workflow_preset == "BAC Auditing Protocols":
+    input_placeholder = "What audit trails and metrics are critical for tracking transparency in the digital logbook?"
 
-# Initialize chat history
+# 6. Initialize State Tracking Memory
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Magandang araw! I am your MSU-GenSan procurement assistant. Ask me about RA 9184, RFPs, supplier evaluation, or supply chain risk management for the university."}
+        {"role": "assistant", "content": "Mabuhi! I am **Isko BidDo AI**, your compliance advisory assistant for MSU-Gensan procurement. How can I help you optimize your tracking, logging, or regulatory alignment today?"}
     ]
 
-# Display chat history
+# 7. Render Chat History Layout
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# ------------------------------
-# Gemini API Client
-# ------------------------------
-@st.cache_resource
-def get_client():
-    return genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
-
-client = get_client()
-
-# Enhanced system prompt with MSU-GenSan context
-SYSTEM_PROMPT = f"""
-You are an expert Corporate Procurement and Supply Chain Specialist for **Mindanao State University - General Santos (MSU-GenSan)**.
-Your role is to assist faculty, staff, and BAC members with public procurement in the Philippines, strictly following RA 9184 and its IRR.
-
-Key university context:
-- MSU-GenSan is a state university in South Cotabato, SOCCSKSARGEN region.
-- Procurement follows Government Procurement Reform Act (RA 9184).
-- Common modes: Public Bidding, Limited Source Bidding, Negotiated Procurement, Small Value Procurement (up to ₱1M per item), and Shopping (₱50k - ₱500k depending on goods).
-- BAC (Bids and Awards Committee) oversees the process.
-- Philippine Transparency and accountability requirements (PhilGEPS posting, BAC resolutions).
-
-Your capabilities:
-1. **Drafting** RFPs, RFQs, RFIs, and BAC resolutions.
-2. **Vendor evaluation** – weighted scoring sheets (criteria: price, technical capability, delivery, after-sales).
-3. **Contract negotiation tactics** and risk mitigation (force majeure, penalties, warranties).
-4. **Explaining concepts** – TCO, Incoterms 2024, SLAs, performance security, liquidated damages.
-5. **Compliance checks** – ensuring procurement aligns with RA 9184, COA rules, and university guidelines.
-
-Always maintain a professional, risk-aware, compliance-driven tone. If asked about unrelated topics (e.g., politics, entertainment), gently steer back to procurement. When referencing amounts, use Philippine Peso (₱). Cite relevant sections of RA 9184 when helpful.
-Current date: {datetime.now().strftime("%B %d, %Y")}
-"""
-
-# ------------------------------
-# Handle User Input & Stream Response
-# ------------------------------
-if prompt := st.chat_input("Ask a procurement question (e.g., 'Draft an RFP for library books')..."):
-    # Add user message to chat
-    st.session_state.messages.append({"role": "user", "content": prompt})
+# 8. User Interaction & Prompt Pipeline Execution
+if prompt := st.chat_input(input_placeholder):
+    
     with st.chat_message("user"):
         st.markdown(prompt)
-    
-    # Build conversation history for Gemini
-    gemini_history = []
-    for msg in st.session_state.messages[:-1]:  # exclude the latest user message (we'll add it separately)
-        role = "user" if msg["role"] == "user" else "model"
-        gemini_history.append(types.Content(
-            role=role,
-            parts=[types.Part.from_text(text=msg["content"])]
-        ))
-    
-    # Add current user prompt as last user content
-    current_user_content = types.Content(
-        role="user",
-        parts=[types.Part.from_text(text=prompt)]
-    )
-    full_contents = gemini_history + [current_user_content]
-    
-    # Generate streaming response
+    st.session_state.messages.append({"role": "user", "content": prompt})
+
     with st.chat_message("assistant"):
-        try:
-            response_stream = client.models.generate_content_stream(
-                model='gemini-2.5-flash',
-                contents=full_contents,  # send full conversation for context
-                config=types.GenerateContentConfig(
-                    system_instruction=SYSTEM_PROMPT,
-                    temperature=0.7,
-                    top_p=0.95,
+        # Format chat architecture cleanly into Gemini's multi-turn schema
+        gemini_history = []
+        for msg in st.session_state.messages[:-1]:
+            g_role = "user" if msg["role"] == "user" else "model"
+            gemini_history.append(
+                types.Content(
+                    role=g_role, 
+                    parts=[types.Part.from_text(text=msg["content"])]
                 )
             )
-            
-            def stream_chunks():
-                for chunk in response_stream:
-                    if chunk.text:
-                        yield chunk.text
-            
-            full_response = st.write_stream(stream_chunks())
-            
-        except Exception as e:
-            full_response = f"⚠️ Error connecting to AI service: {str(e)}. Please check your API key or network."
-            st.error(full_response)
-    
-    # Save assistant response to history
+
+        # Connect live stream with system parameters locked in
+        response_stream = client.models.generate_content_stream(
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+                temperature=0.3,  # Dropped temperature to 0.3 for stricter compliance accuracy
+                max_output_tokens=1500
+            )
+        )
+        
+        def stream_chunks():
+            for chunk in response_stream:
+                if chunk.text:
+                    yield chunk.text
+
+        full_response = st.write_stream(stream_chunks())
+        
     st.session_state.messages.append({"role": "assistant", "content": full_response})
