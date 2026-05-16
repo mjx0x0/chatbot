@@ -1,5 +1,4 @@
 import streamlit as st
-from openai import OpenAI
 
 # Page configs
 st.set_page_config(page_title="Procurement AI Assistant", page_icon="📦", layout="centered")
