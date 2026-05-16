@@ -1,15 +1,14 @@
 import streamlit as st
-# CHANGE THIS LINE:
 from google import genai
 from google.genai import types
 
-# Page configs
+# Page configs configured for your MSU project
 st.set_page_config(page_title="Procurement AI Assistant", page_icon="📦", layout="centered")
 st.title("📦 Procurement & Sourcing AI Assistant")
 st.caption("Powered by a live Gemini AI Model")
 
 # 1. Initialize the Google GenAI Client
-# It will read the API key securely from your st.secrets
+# On Streamlit Cloud, this automatically pulls from the Cloud Advanced Settings Secrets
 client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
 # 2. Define the System Persona instructions for the AI
@@ -46,8 +45,7 @@ if prompt := st.chat_input("Ask a procurement question..."):
         
         # Format our Streamlit chat history into the structure Gemini expects
         gemini_history = []
-        for msg in st.session_state.messages[:-1]: # exclude the brand new prompt
-            # Map roles to what Gemini expects ('user' or 'model')
+        for msg in st.session_state.messages[:-1]:
             g_role = "user" if msg["role"] == "user" else "model"
             gemini_history.append(types.Content(role=g_role, parts=[types.Part.from_text(text=msg["content"])]))
 
@@ -56,12 +54,11 @@ if prompt := st.chat_input("Ask a procurement question..."):
             model='gemini-2.5-flash',
             contents=prompt,
             config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT, # Forces the AI to stay in character
+                system_instruction=SYSTEM_PROMPT,
                 temperature=0.7
             )
         )
         
-        # Create a helper function so st.write_stream can animate the text
         def stream_chunks():
             for chunk in response_stream:
                 yield chunk.text
