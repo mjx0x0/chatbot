@@ -78,10 +78,8 @@ Tone: Professional, highly objective, academic, risk-aware, and regulatory-drive
 """
 
 # 5. Sidebar Layout with Quick Reference Actions
-with st.sidebar:
-    st.markdown("### 🏛️ University Hub")
-    
-    st.image("logo.png", width=120)
+with st.sidebar:    
+    st.image("logo.png", width=200)
     
     st.markdown("---")
     st.markdown("### 🛠️ Quick Inquiry Presets")
